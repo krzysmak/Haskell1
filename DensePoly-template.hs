@@ -3,10 +3,28 @@ import PolyClass
 import Representation
 
 instance Functor DensePoly where
+    fmap f (P p) = P (map f p)
+
+removeLeadingZeros :: Num a => [a] -> [a]
+removeLeadingZeros [] = []
+removeLeadingZeros (x : xs)
+    | x == 0 = removeLeadingZeros xs
+    | otherwise = (x : xs)
+
+removeTrailingZeros :: Num a => [a] -> [a]
+removeTrailingZeros p = removeLeadingZeros $ reverse p
 
 instance Polynomial DensePoly where
+    zeroP = P []
+    constP x = P [x]
+    varP = P [0, 1]
+    evalP (P p) x = foldr (\a acc -> a + acc * x) 0 p
+    shiftP n (P p) = P (removeTrailingZeros (replicate n 0 ++ p))
+    degree (P p) = (length $ removeTrailingZeros p) - 1
+    nullP (P p) = all (== 0) p
 
 instance (Eq a, Num a) => Num (DensePoly a) where
+
 
 -- |
 -- >>> x^3 - 1 :: DensePoly Integer 
