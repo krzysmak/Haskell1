@@ -62,6 +62,7 @@ instance (Eq a, Num a) => Num (DensePoly a) where
 -- True
     
 instance (Eq a, Num a) => Eq (DensePoly a) where
+    P p1 == P p2 = removeTrailingZeros p1 == removeTrailingZeros p2
 
 -- |
 -- >>>  P [1,2] == P [1,2]

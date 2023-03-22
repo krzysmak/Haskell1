@@ -62,3 +62,5 @@ instance (Eq a, Num a) => Num (DensePoly a) where
     fromInteger e = constP $ fromIntegral e
     P p1 * P p2 = P (removeTrailingZeros (mulArrays p1 p2))
     
+instance (Eq a, Num a) => Eq (DensePoly a) where
+    P p1 == P p2 = removeTrailingZeros p1 == removeTrailingZeros p2
