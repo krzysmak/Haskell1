@@ -40,15 +40,45 @@ instance Polynomial SparsePoly where
     degree (S s)
         | null sorted = -1
         | otherwise = x
-        where 
+        where
             sorted = sortAndSimplify s
             (x, _) = last sorted
     nullP (S s) = null $ sortAndSimplify s
 
+addSparse :: (Eq a, Num a) => [(Int, a)] -> [(Int, a)] -> [(Int, a)]
+addSparse s [] = s
+addSparse [] s = s
+addSparse ((p1, c1) : xs) ((p2, c2) : ys)
+    | p1 > p2 = (p1, c1) : addSparse xs ((p2, c2) : ys)
+    | p1 < p2 = (p2, c2) : addSparse ((p1, c1) : xs) ys
+    | otherwise = (p1, c1 + c2) : addSparse xs ys
+
+subSparse :: (Eq a, Num a) => [(Int, a)] -> [(Int, a)] -> [(Int, a)]
+subSparse s [] = s
+subSparse [] ((p, c) : xs) = (p, -1 * c) : subSparse [] xs
+subSparse ((p1, c1) : xs) ((p2, c2) : ys)
+    | p1 > p2 = (p1, c1) : subSparse xs ((p2, c2) : ys)
+    | p1 < p2 = (p2, -1 * c2) : subSparse ((p1, c1) : xs) ys
+    | otherwise = (p1, c1 - c2) : subSparse xs ys
+
+mulSparse :: (Eq a, Num a) => [(Int, a)] -> [(Int, a)] -> [(Int, a)]
+mulSparse s [] = []
+mulSparse [] s = []
+mulSparse ((p, c) : xs) ys = addSparse firstPoly (mulSparse xs ys)
+    where firstPoly = fmap (\(x, y) -> (x + p, y * c)) ys
+
+
 instance (Eq a, Num a) => Num (SparsePoly a) where
+    S s1 + S s2 = S $ simplify (addSparse (sortAndSimplify s1) (sortAndSimplify s2))
+    S s1 - S s2 = S $ simplify (subSparse (sortAndSimplify s1) (sortAndSimplify s2))
+    S s1 * S s2 = S $ simplify (mulSparse (sortAndSimplify s1) (sortAndSimplify s2))
+    abs = undefined
+    signum = undefined
+    fromInteger e = constP $ fromIntegral e
 
 instance (Eq a, Num a) => Eq (SparsePoly a) where
-    p == q = nullP(p-q)
+    (==) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> Bool
+    p == q = nullP (p-q)
 
 -- qrP s t | not(nullP t) = (q, r) iff s == q*t + r && degree r < degree t
 qrP :: (Eq a, Fractional a) => SparsePoly a -> SparsePoly a -> (SparsePoly a, SparsePoly a)
