@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use second" #-}
+{-# HLINT ignore "Use bimap" #-}
 module SparsePoly(fromDP, toDP, qrP) where
 import PolyClass
 import Representation
@@ -11,8 +12,21 @@ import Data.List
 fromDP :: (Eq a, Num a) => DensePoly a -> SparsePoly a
 toDP :: (Eq a, Num a) => SparsePoly a -> DensePoly a
 
-fromDP = undefined
-toDP = undefined
+fromDPArrayWithIndex :: (Eq a, Num a) => Int -> [a] -> [(Int, a)]
+fromDPArrayWithIndex _ [] = []
+fromDPArrayWithIndex i (x : xs)
+    | x == 0 = fromDPArrayWithIndex (i + 1) xs
+    | otherwise = (i, x) : fromDPArrayWithIndex (i + 1) xs
+
+fromDP (P p) = S $ fromDPArrayWithIndex 0 p
+
+toDPArrayWithIndex :: (Eq a, Num a) => Int -> [(Int, a)] -> [a]
+toDPArrayWithIndex _ [] = []
+toDPArrayWithIndex i ((p, c) : xs)
+    | i == p = c : toDPArrayWithIndex (i + 1) xs
+    | otherwise = 0 : toDPArrayWithIndex (i + 1) ((p, c) : xs)
+
+toDP (S s) = P $ toDPArrayWithIndex 0 s
 
 first :: (a -> a') -> (a, b) -> (a', b)
 first = undefined
@@ -55,10 +69,10 @@ addSparse ((p1, c1) : xs) ((p2, c2) : ys)
 
 subSparse :: (Eq a, Num a) => [(Int, a)] -> [(Int, a)] -> [(Int, a)]
 subSparse s [] = s
-subSparse [] ((p, c) : xs) = (p, -1 * c) : subSparse [] xs
+subSparse [] ((p, c) : xs) = (p,-1 * c) : subSparse [] xs
 subSparse ((p1, c1) : xs) ((p2, c2) : ys)
     | p1 > p2 = (p1, c1) : subSparse xs ((p2, c2) : ys)
-    | p1 < p2 = (p2, -1 * c2) : subSparse ((p1, c1) : xs) ys
+    | p1 < p2 = (p2,-1 * c2) : subSparse ((p1, c1) : xs) ys
     | otherwise = (p1, c1 - c2) : subSparse xs ys
 
 mulSparse :: (Eq a, Num a) => [(Int, a)] -> [(Int, a)] -> [(Int, a)]
@@ -77,12 +91,28 @@ instance (Eq a, Num a) => Num (SparsePoly a) where
     fromInteger e = constP $ fromIntegral e
 
 instance (Eq a, Num a) => Eq (SparsePoly a) where
-    (==) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> Bool
     p == q = nullP (p-q)
+
+qrPNonZeroSorted :: (Eq a, Fractional a) => [(Int, a)] -> [(Int, a)] -> [(Int, a)] -> ([(Int, a)], [(Int, a)])
+qrPNonZeroSorted acc p@((p1, c1) : xs) q@((p2, c2) : ys)
+    | p1 < p2 = (acc, p)
+    | otherwise = qrPNonZeroSorted newAcc s q
+        where
+            div = c2 / c1
+            powerDiff = p1 - p2
+            newAcc = (powerDiff, div) : acc
+            s = subSparse p (mulSparse [(powerDiff, div)] q)   
+
+
+qrPSorted :: (Eq a, Fractional a) => SparsePoly a -> SparsePoly a -> (SparsePoly a, SparsePoly a)
+qrPSorted _ (S []) = undefined
+qrPSorted (S []) _ = (S [], S [])
+qrPSorted (S s1) (S s2) = (S $ fst x, S $ snd x)
+    where x = qrPNonZeroSorted [] s1 s2
 
 -- qrP s t | not(nullP t) = (q, r) iff s == q*t + r && degree r < degree t
 qrP :: (Eq a, Fractional a) => SparsePoly a -> SparsePoly a -> (SparsePoly a, SparsePoly a)
-qrP = undefined
+qrP (S s1) (S s2) = qrPSorted (S $ sortAndSimplify s1) (S $ sortAndSimplify s2)
 
 -- | Division example
 -- >>> qrP (x^2 - 1) (x -1) == ((x + 1), 0)
