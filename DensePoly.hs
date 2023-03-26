@@ -16,6 +16,7 @@ removeTrailingZeros p = reverse $ removeLeadingZeros $ reverse p
 
 instance Polynomial DensePoly where
     zeroP = P []
+    constP 0 = P []
     constP x = P [x]
     varP = P [0, 1]
     evalP (P p) x = foldr (\a acc -> a + acc * x) 0 p

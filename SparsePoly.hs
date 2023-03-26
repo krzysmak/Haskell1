@@ -54,6 +54,7 @@ instance Functor SparsePoly where
 
 instance Polynomial SparsePoly where
     zeroP = S []
+    constP 0 = S []
     constP x = S [(0, x)]
     varP = S [(1, 1)]
     evalP (S s) x = foldr (\(p, c) acc -> acc + c * (x^p)) 0 s
