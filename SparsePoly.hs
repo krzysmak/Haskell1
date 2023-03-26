@@ -107,12 +107,11 @@ qrPNonZeroSorted acc p@((p1, c1) : xs) q@((p2, c2) : ys)
     | otherwise = qrPNonZeroSorted newAcc (drop 1 s) q
         where
             div
-                | c1 == 0 = 0
-                | otherwise = c2 / c1
+                | c2 == 0 = 0
+                | otherwise = c1 / c2
             powerDiff = p1 - p2
             newAcc = (powerDiff, div) : acc
             s = unS (S p - (S [(powerDiff, div)] * S q))   
-
 
 qrPSorted :: (Eq a, Fractional a) => SparsePoly a -> SparsePoly a -> (SparsePoly a, SparsePoly a)
 qrPSorted _ (S []) = undefined
