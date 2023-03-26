@@ -36,11 +36,11 @@ second = undefined
 simplify :: (Eq a, Num a) => [(Int, a)] -> [(Int, a)]
 simplify [] = []
 simplify ((x, y) : xs)
-    | x == 0 = simplify xs
+    | y == 0 = simplify xs
     | otherwise = (x, y) : simplify xs
 
 sortAndSimplify :: (Eq a, Num a) => [(Int, a)] -> [(Int, a)]
-sortAndSimplify xs = simplify $ sortBy (\(x, _) (y, _) -> compare x y) xs
+sortAndSimplify xs = simplify $ sortBy (flip (\(x, _) (y, _) -> compare x y)) xs
 
 instance Functor SparsePoly where
     fmap f (S s) = S $ fmap (\(p, c) -> (p, f c)) s

@@ -12,7 +12,7 @@ removeLeadingZeros (x : xs)
     | otherwise = x : xs
 
 removeTrailingZeros :: (Eq a, Num a) => [a] -> [a]
-removeTrailingZeros p = removeLeadingZeros $ reverse p
+removeTrailingZeros p = reverse $ removeLeadingZeros $ reverse p
 
 instance Polynomial DensePoly where
     zeroP = P []
