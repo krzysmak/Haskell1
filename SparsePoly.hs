@@ -103,7 +103,7 @@ instance (Eq a, Num a) => Eq (SparsePoly a) where
 qrPNonZeroSorted :: (Eq a, Fractional a) => [(Int, a)] -> [(Int, a)] -> [(Int, a)] -> ([(Int, a)], [(Int, a)])
 qrPNonZeroSorted acc p@((p1, c1) : xs) q@((p2, c2) : ys)
     | p1 < p2 = (acc, p)
-    | otherwise = qrPNonZeroSorted newAcc s q
+    | otherwise = qrPNonZeroSorted newAcc (drop 1 s) q
         where
             div = c2 / c1
             powerDiff = p1 - p2
