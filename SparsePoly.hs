@@ -63,7 +63,7 @@ instance Polynomial SparsePoly where
         | otherwise = x
         where
             sorted = sortAndSimplify s
-            (x, _) = last sorted
+            (x, _) = head sorted
     nullP (S s) = null $ sortAndSimplify s
 
 addSparse :: (Eq a, Num a) => [(Int, a)] -> [(Int, a)] -> [(Int, a)]
