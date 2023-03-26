@@ -117,7 +117,7 @@ qrPNonZeroSorted acc p@((p1, c1) : xs) q@((p2, c2) : ys)
 qrPSorted :: (Eq a, Fractional a) => SparsePoly a -> SparsePoly a -> (SparsePoly a, SparsePoly a)
 qrPSorted _ (S []) = undefined
 qrPSorted (S []) _ = (S [], S [])
-qrPSorted (S s1) (S s2) = (S $ fst x, S $ snd x)
+qrPSorted (S s1) (S s2) = (S $ simplify $ fst x, S $ simplify $ snd x)
     where x = qrPNonZeroSorted [] s1 s2
 
 -- qrP s t | not(nullP t) = (q, r) iff s == q*t + r && degree r < degree t
