@@ -106,7 +106,9 @@ qrPNonZeroSorted acc p@((p1, c1) : xs) q@((p2, c2) : ys)
     | p1 < p2 = (acc, p)
     | otherwise = qrPNonZeroSorted newAcc (drop 1 s) q
         where
-            div = c2 / c1
+            div
+                | c1 == 0 = 0
+                | otherwise = c2 / c1
             powerDiff = p1 - p2
             newAcc = (powerDiff, div) : acc
             s = subSparse p (mulSparse [(powerDiff, div)] q)   
