@@ -18,7 +18,14 @@ fromDPArrayWithIndex i (x : xs)
     | x == 0 = fromDPArrayWithIndex (i + 1) xs
     | otherwise = (i, x) : fromDPArrayWithIndex (i + 1) xs
 
-fromDP (P p) = S $ fromDPArrayWithIndex 0 p
+fromDP (P p) = S $ fromDPArrayWithIndex 0 (removeTrailingZeros p)
+    where 
+        removeLeadingZeros [] = []
+        removeLeadingZeros (x : xs)
+            | x == 0 = removeLeadingZeros xs
+            | otherwise = x : xs
+        removeTrailingZeros p = reverse $ removeLeadingZeros $ reverse p
+
 
 toDPArrayWithIndex :: (Eq a, Num a) => Int -> [(Int, a)] -> [a]
 toDPArrayWithIndex _ [] = []
@@ -26,7 +33,7 @@ toDPArrayWithIndex i ((p, c) : xs)
     | i == p = c : toDPArrayWithIndex (i + 1) xs
     | otherwise = 0 : toDPArrayWithIndex (i + 1) ((p, c) : xs)
 
-toDP (S s) = P $ toDPArrayWithIndex 0 s
+toDP (S s) = P $ toDPArrayWithIndex 0 (sortAndSimplify s)
 
 first :: (a -> a') -> (a, b) -> (a', b)
 first = undefined
