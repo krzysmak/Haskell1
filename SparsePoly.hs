@@ -100,7 +100,7 @@ instance (Eq a, Num a) => Num (SparsePoly a) where
 instance (Eq a, Num a) => Eq (SparsePoly a) where
     p == q = nullP (p-q)
 
-addSparseFrac :: (Eq a, Fractional a) => [(Int, a)] -> [(Int, a)] -> [(Int, a)]
+addSparseFrac :: (Eq a, Num a) => [(Int, a)] -> [(Int, a)] -> [(Int, a)]
 addSparseFrac s [] = s
 addSparseFrac [] s = s
 addSparseFrac ((p1, c1) : xs) ((p2, c2) : ys)
@@ -109,7 +109,7 @@ addSparseFrac ((p1, c1) : xs) ((p2, c2) : ys)
     | otherwise = (p1, c1 + c2) : addSparseFrac xs ys
 
 
-subSparseFrac :: (Eq a, Fractional a) => [(Int, a)] -> [(Int, a)] -> [(Int, a)]
+subSparseFrac :: (Eq a, Num a) => [(Int, a)] -> [(Int, a)] -> [(Int, a)]
 subSparseFrac s [] = s
 subSparseFrac [] ((p, c) : xs) = (p,-1 * c) : subSparseFrac [] xs
 subSparseFrac ((p1, c1) : xs) ((p2, c2) : ys)
@@ -117,7 +117,7 @@ subSparseFrac ((p1, c1) : xs) ((p2, c2) : ys)
     | p1 < p2 = (p2,-1 * c2) : subSparseFrac ((p1, c1) : xs) ys
     | otherwise = (p1, c1 - c2) : subSparseFrac xs ys
 
-mulSparseFrac :: (Eq a, Fractional a) => [(Int, a)] -> [(Int, a)] -> [(Int, a)]
+mulSparseFrac :: (Eq a, Num a) => [(Int, a)] -> [(Int, a)] -> [(Int, a)]
 mulSparseFrac s [] = []
 mulSparseFrac [] s = []
 mulSparseFrac ((p, c) : xs) ys = addSparseFrac firstPoly (mulSparseFrac xs ys)
@@ -126,16 +126,16 @@ mulSparseFrac ((p, c) : xs) ys = addSparseFrac firstPoly (mulSparseFrac xs ys)
 
 qrPNonZeroSorted :: (Eq a, Fractional a) => [(Int, a)] -> [(Int, a)] -> [(Int, a)] -> ([(Int, a)], [(Int, a)])
 qrPNonZeroSorted acc [] q = (acc, [])
-qrPNonZeroSorted acc p@((p1, c1) : _) q@((p2, c2) : _)
-    | p1 < p2 = (acc, p)
-    | otherwise = qrPNonZeroSorted newAcc (drop 1 s) q
+qrPNonZeroSorted acc ((p1, c1) : xs) ((p2, c2) : ys)
+    | p1 < p2 = (acc, ((p1, c1) : xs))
+    | otherwise = qrPNonZeroSorted newAcc (drop 1 s) ((p2, c2) : ys)
         where
             div
                 | c1 == 0 = 0
                 | otherwise = c2 / c1
             powerDiff = p1 - p2
             newAcc = (powerDiff, div) : acc
-            s = subSparseFrac p (mulSparseFrac [(powerDiff, div)] q)   
+            s = subSparse ((p1, c1) : xs) (mulSparse [(powerDiff, div)] ((p2, c2) : ys))   
 
 
 qrPSorted :: (Eq a, Fractional a) => SparsePoly a -> SparsePoly a -> (SparsePoly a, SparsePoly a)
