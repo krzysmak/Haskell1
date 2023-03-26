@@ -101,6 +101,7 @@ instance (Eq a, Num a) => Eq (SparsePoly a) where
     p == q = nullP (p-q)
 
 qrPNonZeroSorted :: (Eq a, Fractional a) => [(Int, a)] -> [(Int, a)] -> [(Int, a)] -> ([(Int, a)], [(Int, a)])
+qrPNonZeroSorted acc [] q = (acc, [])
 qrPNonZeroSorted acc p@((p1, c1) : xs) q@((p2, c2) : ys)
     | p1 < p2 = (acc, p)
     | otherwise = qrPNonZeroSorted newAcc (drop 1 s) q
